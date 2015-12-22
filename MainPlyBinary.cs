@@ -17,7 +17,8 @@ commands:
 plyToBinary <ply file> <target file> (loads the ply file and saves the mesh to the target file as a plybin)
 binaryToPly <plybin file> <target file> (loads the plybin file and saves the mesh to the target file as a ply)
 plyDirToBinary <ply directory> <target directory> (recursivly converts all .ply in the ply directory to .plybin in the target directory)
-binaryDirToPly <plybin directory> <target directory> (recursivly converts all .plybin the in plybin directory to .ply in the target directory)");
+binaryDirToPly <plybin directory> <target directory> (recursivly converts all .plybin the in plybin directory to .ply in the target directory)
+-h or --help (Print this help message)");
 					return;
 				} else if (args [0].Equals ("plyToBinary")) {
 					if (args.Length != 3)
