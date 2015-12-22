@@ -1,7 +1,7 @@
 ### Ply To Binply
 A simple software for turning [.ply files](https://en.wikipedia.org/wiki/PLY_(file_format) "PLY (file format) - Wikipedia") into .plybin files.
-.plybin contains vertex position, color and normals in a binary format, making the file both smaller and faster to read (For machines, that is).
-Converting a .ply or a folder of .ply files is easy, and you can just as easily convert .plybin files back to .ply
+The plybin file contains vertex position, color and normals in a binary format, making the file both smaller and faster to read (For machines, that is).
+Converting a ply file or a folder of ply files is easy, and you can just as easily convert plybin files back to ply.
 Note: BinaryWriter is used to write the .plybin files. Mind the endianness of your system.
 
 ##### The .plybin spec
