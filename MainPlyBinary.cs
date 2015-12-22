@@ -12,6 +12,8 @@ namespace PlyToPlybin
 				else if (args [0].Equals ("-h") | args [0].Equals ("--help") | args [0].Equals ("-?")) {
 					Console.Out.WriteLine (
 						@"Help file for ply binary converter
+usage: plytoplybin <command> <options>
+commands:
 plyToBinary <ply file> <target file> (loads the ply file and saves the mesh to the target file as a plybin)
 binaryToPly <plybin file> <target file> (loads the plybin file and saves the mesh to the target file as a ply)
 plyDirToBinary <ply directory> <target directory> (recursivly converts all .ply in the ply directory to .plybin in the target directory)

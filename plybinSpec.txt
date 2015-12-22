@@ -1,8 +1,8 @@
-﻿UInt32: Vertex amount
-UInt32: Face amount
-for n in range(Vertex amount):
-	float, float, float: vertex[n] position;
-	float, float, float: vertex[n] normal;
-	float, float, float: vertex[n] color;
-for n in range(0,Face amount,3):
-	Uint32, UInt32, UInt32: face[n:n+2]
+﻿Uint32 vertexCount;
+Uint32 faceCount;
+for n in range(vertexCount):
+	float, float, float: vertex[n] position
+	float, float, float: vertex[n] normal
+	float, float, float: vertex[n] color
+for n in range(0,faceCount,3):
+	Uint32, Uint32, Uint32: faces[n:n+2]
