@@ -7,13 +7,13 @@ Note: BinaryWriter is used to write the .plybin files. Mind the endianness of yo
 ##### The .plybin spec
 ```
 Uint32: vertexCount;
-Uint32: indexCount;
+Uint32: faceCount;
 for n in range(vertexCount):
 	float, float, float: vertices[n] position
 	float, float, float: vertices[n] normal
 	float, float, float: vertices[n] color
-for n in range(indexCount):
-	Uint32: indices[n]
+for n in range(faceCount):
+	Uint32, Uint32, Uint32: faces[n]
 ```
 
 When converting a .ply without color data, white is used. When converting a .ply without normals, they are generated automaticly
