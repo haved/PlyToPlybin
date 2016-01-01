@@ -52,8 +52,8 @@ namespace PlyToPlybin
 						vertices[j].Normal.Z = Convert.ToSingle(numbers[5], CultureInfo.InvariantCulture);
 					}
 					if(texCoords) {
-						vertices[i].S = Convert.ToSingle(numbers[6], CultureInfo.InvariantCulture);
-						vertices[i].T = Convert.ToSingle(numbers[7], CultureInfo.InvariantCulture);
+						vertices[j].S = Convert.ToSingle(numbers[6], CultureInfo.InvariantCulture);
+						vertices[j].T = Convert.ToSingle(numbers[7], CultureInfo.InvariantCulture);
 					}
 					if(colors)
 					{
@@ -197,7 +197,7 @@ property uchar green
 property uchar blue");
 				}
 				writer.WriteLine(@"
-element face {3}
+element face {0}
 property list uchar uint vertex_indices
 end_header", Indices.Length / 3);
 				if(colors&texCoords)
