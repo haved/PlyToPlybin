@@ -2,7 +2,6 @@
 using System.IO;
 using System.Collections.Generic;
 using System.Globalization;
-using OpenTK;
 
 namespace PlyToPlybin
 {
@@ -19,8 +18,9 @@ namespace PlyToPlybin
 
 				uint vertexAmount = 0;
 				uint faceAmount = 0;
-				bool normals=false;
-				bool colors=false;
+				bool normals   = false;
+				bool texCoords = false;
+				bool colors    = false;
 
 				uint i = 0;
 				for (; i < lines.Length; i++)
@@ -29,8 +29,9 @@ namespace PlyToPlybin
 						vertexAmount = UInt32.Parse (lines [i].Substring (15));
 					if (lines [i].StartsWith ("element face ", StringComparison.Ordinal))
 						faceAmount = UInt32.Parse (lines [i].Substring (13));
-					normals |= lines [i].StartsWith ("property float nx", StringComparison.Ordinal);
-					colors |= lines [i].StartsWith ("property uchar red", StringComparison.Ordinal); 
+					normals   |= lines [i].StartsWith ("property float nx", StringComparison.Ordinal);
+					texCoords |= lines [i].StartsWith ("property float s", StringComparison.Ordinal);
+					colors    |= lines [i].StartsWith ("property uchar red", StringComparison.Ordinal);
 					if (lines [i].StartsWith ("end_header", StringComparison.Ordinal))
 						break;
 				}
@@ -39,6 +40,7 @@ namespace PlyToPlybin
 				Vertex[] vertices = new Vertex[vertexAmount];
 
 				String[] numbers;
+				int colorStride = texCoords ? 8 : 6;
 				for(uint j = 0; j < vertexAmount; j++)
 				{
 					numbers = lines[i].Split(' ');
@@ -49,11 +51,15 @@ namespace PlyToPlybin
 						vertices[j].Normal.Y = Convert.ToSingle(numbers[4], CultureInfo.InvariantCulture);
 						vertices[j].Normal.Z = Convert.ToSingle(numbers[5], CultureInfo.InvariantCulture);
 					}
+					if(texCoords) {
+						vertices[i].S = Convert.ToSingle(numbers[6], CultureInfo.InvariantCulture);
+						vertices[i].T = Convert.ToSingle(numbers[7], CultureInfo.InvariantCulture);
+					}
 					if(colors)
 					{
-						vertices[j].Red = Byte.Parse(numbers[6])/255f;
-						vertices[j].Green = Byte.Parse(numbers[7])/255f;
-						vertices[j].Blue = Byte.Parse(numbers[8])/255f;
+						vertices[j].Red   = Byte.Parse(numbers[colorStride])/255f;
+						vertices[j].Green = Byte.Parse(numbers[colorStride+1])/255f;
+						vertices[j].Blue  = Byte.Parse(numbers[colorStride+2])/255f;
 					}
 
 					i++;
@@ -100,8 +106,14 @@ namespace PlyToPlybin
 			}
 		}
 
-		public MeshLoader(Stream file)
+		public MeshLoader(Stream file, int plybinVersion)
 		{
+			bool texCoords = plybinVersion==8 | plybinVersion==11;
+			bool colors    = plybinVersion==9 | plybinVersion==11;
+			if(!texCoords & !colors) {
+				Console.Out.WriteLine("Mesh Loader can't make sense of plybin version {0}", plybinVersion);
+			}
+
 			try
 			{
 				using(var reader = new BinaryReader(file)){
@@ -117,9 +129,15 @@ namespace PlyToPlybin
 						vertices [j].Normal.X = reader.ReadSingle();
 						vertices [j].Normal.Y = reader.ReadSingle();
 						vertices [j].Normal.Z = reader.ReadSingle();
-						vertices [j].Red = reader.ReadSingle();
-						vertices [j].Green = reader.ReadSingle();
-						vertices [j].Blue = reader.ReadSingle();
+						if(texCoords) {
+							vertices[j].S = reader.ReadSingle();
+							vertices[j].T = reader.ReadSingle();
+						}
+						if(colors) {
+							vertices[j].Red   = reader.ReadSingle();
+							vertices[j].Green = reader.ReadSingle();
+							vertices[j].Blue  = reader.ReadSingle();
+						}
 					}
 
 					var indices = new uint[faceAmount*3];
@@ -149,29 +167,49 @@ namespace PlyToPlybin
 			Indices = indices;
 		}
 
-		public void WriteTo(string filename)
+		public void WriteTo(string filename, int plybinVersion)
 		{
+			bool texCoords = plybinVersion==8 | plybinVersion==11;
+			bool colors    = plybinVersion==9 | plybinVersion==11;
+			if(!texCoords & !colors) {
+				Console.Out.WriteLine("Mesh Loader can't make sense of plybin version {0}", plybinVersion);
+			}
 			using (var writer = new StreamWriter (filename, false)) {
 				writer.WriteLine (@"ply
 format ascii 1.0
-comment Created by MeshLoader.WriteTo({0})'
-element vertex {1}
+comment Created by MeshLoader.WriteTo({0}, {1})'
+element vertex {2}
 property float x
 property float y
 property float z
 property float nx
 property float ny
-property float nz
+property float nz", filename, plybinVersion, Vertices.Length);
+				if(texCoords) {
+					writer.WriteLine(@"
+property float s
+property float t");
+				}
+				if(colors) {
+					writer.WriteLine(@"
 property uchar red
 property uchar green
-property uchar blue
-element face {2}
+property uchar blue");
+				}
+				writer.WriteLine(@"
+element face {3}
 property list uchar uint vertex_indices
-end_header", filename, Vertices.Length, Indices.Length / 3);
+end_header", Indices.Length / 3);
+				if(colors&texCoords)
+					foreach (Vertex v in Vertices)
+						writer.WriteLine ("{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10}", v.X, v.Y, v.Z, v.Normal.X, v.Normal.Y, v.Normal.Z, v.S, v.T, (byte)(v.Red * 255), (byte)(v.Green * 255), (byte)(v.Blue * 255));
+				else if(colors)
+					foreach (Vertex v in Vertices)
+						writer.WriteLine ("{0} {1} {2} {3} {4} {5} {6} {7} {8}", v.X, v.Y, v.Z, v.Normal.X, v.Normal.Y, v.Normal.Z, (byte)(v.Red * 255), (byte)(v.Green * 255), (byte)(v.Blue * 255));
+				else if(texCoords)
+					foreach (Vertex v in Vertices)
+						writer.WriteLine ("{0} {1} {2} {3} {4} {5} {6} {7}", v.X, v.Y, v.Z, v.Normal.X, v.Normal.Y, v.Normal.Z, v.S, v.T);
 
-				foreach (Vertex v in Vertices)
-					writer.WriteLine ("{0} {1} {2} {3} {4} {5} {6} {7} {8}", v.X, v.Y, v.Z, v.Normal.X, v.Normal.Y, v.Normal.Z, (byte)(v.Red * 255), (byte)(v.Green * 255), (byte)(v.Blue * 255));
-			
 				for (int i = 0; i < Indices.Length; i += 3)
 					writer.WriteLine ("3 {0} {1} {2}", Indices [i], Indices [i + 1], Indices [i + 2]);
 
@@ -179,8 +217,14 @@ end_header", filename, Vertices.Length, Indices.Length / 3);
 			}
 		}
 
-		public void WriteTo(Stream stream)
+		public void WriteTo(Stream stream, int plybinVersion)
 		{
+			bool texCoords = plybinVersion==8 | plybinVersion==11;
+			bool colors    = plybinVersion==9 | plybinVersion==11;
+			if(!texCoords & !colors) {
+				Console.Out.WriteLine("Mesh Loader can't make sense of plybin version {0}", plybinVersion);
+			}
+
 			using (var writer = new BinaryWriter (stream)) {
 				writer.Write ((UInt32)Vertices.Length);
 				writer.Write ((UInt32)(Indices.Length/3));
@@ -191,9 +235,15 @@ end_header", filename, Vertices.Length, Indices.Length / 3);
 					writer.Write (v.Normal.X);
 					writer.Write (v.Normal.Y);
 					writer.Write (v.Normal.Z);
-					writer.Write (v.Red);
-					writer.Write (v.Green);
-					writer.Write (v.Blue);
+					if(texCoords) {
+						writer.Write(v.S);
+						writer.Write(v.T);
+					}
+					if(colors) {
+						writer.Write (v.Red);
+						writer.Write (v.Green);
+						writer.Write (v.Blue);
+					}
 				}
 				foreach (UInt32 index in Indices)
 					writer.Write (index);
