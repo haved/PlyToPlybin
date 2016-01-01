@@ -1,8 +1,33 @@
-﻿Uint32: vertexCount;
+﻿plybin9: (the old .plybin)
+
+Uint32: vertexCount;
 Uint32: faceCount;
 for n in range(vertexCount):
 	float, float, float: vertices[n] position
 	float, float, float: vertices[n] normal
+	float, float, float: vertices[n] color
+for n in range(faceCount):
+	Uint32, Uint32, Uint32: faces[n]
+
+plybin8:
+
+Uint32: vertexCount;
+Uint32: faceCount;
+for n in range(vertexCount):
+	float, float, float: vertices[n] position
+	float, float, float: vertices[n] normal
+	float, float:	     vertices[n] textureCoord
+for n in range(faceCount):
+	Uint32, Uint32, Uint32: faces[n]
+
+plybin11:
+
+Uint32: vertexCount;
+Uint32: faceCount;
+for n in range(vertexCount):
+	float, float, float: vertices[n] position
+	float, float, float: vertices[n] normal
+	float, float:	     vertices[n] textureCoord
 	float, float, float: vertices[n] color
 for n in range(faceCount):
 	Uint32, Uint32, Uint32: faces[n]

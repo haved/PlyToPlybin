@@ -8,11 +8,13 @@ namespace PlyToPlybin
 		public static void Main(string[] args)
 		{
 			try {
+				bool plybin9=false;
 				if (args.Length == 0) {}
 				else if (args [0].Equals ("-h") | args [0].Equals ("--help") | args [0].Equals ("-?")) {
 					Console.Out.WriteLine (
 						@"Help file for ply binary converter
-usage: plytoplybin <command> <options>
+usage: plytoplybin [-o] <command> <options>
+-o --old -9 reads/writes plybin9 files without texture data. plybin11 is otherwise used. To convert, go between ply files.
 commands:
 plyToBinary <ply file> <target file> (loads the ply file and saves the mesh to the target file as a plybin)
 binaryToPly <plybin file> <target file> (loads the plybin file and saves the mesh to the target file as a ply)
@@ -20,7 +22,15 @@ plyDirToBinary <ply directory> <target directory> (recursivly converts all .ply 
 binaryDirToPly <plybin directory> <target directory> (recursivly converts all .plybin the in plybin directory to .ply in the target directory)
 -h or --help (Print this help message)");
 					return;
-				} else if (args [0].Equals ("plyToBinary")) {
+				}
+				else if(args[0].Equals("-o") | args[0].Equals("--old") | args[0].Equals("-9"))
+				{
+					plybin9=true;
+					String[] newArgs = new String[args.Length-1];
+					System.Array.Copy(args, 1, newArgs, 0, newArgs.Length);
+					args=newArgs;
+				}
+				if (args [0].Equals ("plyToBinary")) {
 					if (args.Length != 3)
 						Console.Out.WriteLine ("Wrong amount of arguments supplied");
 					else {
