@@ -30,7 +30,7 @@ binaryDirToPly <plybin directory> <target directory> (recursivly converts all .p
 
 ##### The .plybin spec
 ######plybin8:
-Total size: (2+vertexCount*8+faceCount*3)*4
+Total size: (2+vertexCount\*8+faceCount\*3)\*4
 ```
 Uint32: vertexCount;
 Uint32: faceCount;
@@ -43,8 +43,8 @@ for n in range(faceCount):
 ```
 
 ######plybin9:
-The old .plybin
-Total size: (2+vertexCount*9+faceCount*3)*4
+The old .plybin  
+Total size: (2+vertexCount\*9+faceCount\*3)\*4
 
 ```
 Uint32: vertexCount;
@@ -58,7 +58,7 @@ for n in range(faceCount):
 ```
 
 ######plybin11:
-Total size: (2+vertexCount*11+faceCount*3)*4
+Total size: (2+vertexCount\*11+faceCount\*3)\*4
 
 ```
 Uint32: vertexCount;
