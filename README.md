@@ -15,17 +15,18 @@ When converting a .ply without color data, white is used. When converting a .ply
 ##### Command line help
 ```
 Help file for ply binary converter
-usage: plytoplybin [-8|-9|-11|] <command> <options>
--8 read and write plybin8
--9 read and write plybin9
--11 read and write plybin11
-If ommited: type deduction based on file name or ply file content
+usage: PlyToPlybin <command> <input> <output> [version] [-r]
+[version] 	'-8', '-9' or '-11'
+                Only needed if files don't contain varsion data in filename.
+		When using plyDirToBinary, plybin version must be specified.
+		When using binaryDirToPly, plybin version is always deducted.
+[-r]		Scan directories recursivly. Only for directory operations.
 commands:
-plyToBinary <ply file> <target file> (loads the ply file and saves the mesh to the target file as a plybin)
-binaryToPly <plybin file> <target file> (loads the plybin file and saves the mesh to the target file as a ply)
-plyDirToBinary <ply directory> <target directory> (recursivly converts all .ply in the ply directory to .plybin in the target directory)
-binaryDirToPly <plybin directory> <target directory> (recursivly converts all .plybin the in plybin directory to .ply in the target directory)
--h or --help (Print this help message)
+plyToBinary <ply file> <target file> [version] 				Loads the ply file and saves the mesh to the target file as a plybin)
+binaryToPly <plybin file> <target file> [version] 			Loads the plybin file and saves the mesh to the target file as a ply)
+plyDirToBinary <ply directory> <target directory> <version> [-r]	Converts all .ply in the ply directory to .plybin in the target directory)
+binaryDirToPly <plybin directory> <target directory> [-r]		Converts all .plybin the in plybin directory to .ply in the target directory)
+-h or --help 								Print this help message
 ```
 
 ##### The .plybin spec
