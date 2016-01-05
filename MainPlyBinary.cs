@@ -100,11 +100,11 @@ binaryDirToPly <plybin directory> <target directory> [-r]		Converts all .plybin 
 
 		static void PlyToBinary(string infile, string outfile, int plybinVersion)
 		{
+			Console.Out.WriteLine ("infile (ply): {0}, outfile (plybin): {1}", infile, outfile);
 			plybinVersion = UseOrDeductPlybinVersion(plybinVersion, outfile);
 			if(plybinVersion<=0) {
 				return;
 			}
-			Console.Out.WriteLine ("plybin version: {2}, infile (ply): {0}, outfile (plybin): {1}", infile, outfile, plybinVersion);
 
 			var loader = new MeshLoader(infile);
 			using(var stream = new FileStream(outfile, FileMode.Create))
