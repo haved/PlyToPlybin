@@ -12,15 +12,17 @@ namespace PlyToPlybin
 				else if (args [0].Equals ("-h") | args [0].Equals ("--help") | args [0].Equals ("-?")) {
 					Console.Out.WriteLine (
 						@"Help file for ply binary converter
-usage: plytoplybin <command> <options> [version] <>
-[version] 	Only needed if files don't contain varsion data in filename.
+usage: PlyToPlybin <command> <input> <output> [version] [-r]
+[version] 	'-8', '-9' or '-11'
+                Only needed if files don't contain varsion data in filename.
 		When using plyDirToBinary, plybin version must be specified.
-[-r]		Scan directories recursivly
+		When using binaryDirToPly, plybin version is always deducted.
+[-r]		Scan directories recursivly. Only for directory operations.
 commands:
-plyToBinary <ply file> <target file> [-8|-9|-11] 			Loads the ply file and saves the mesh to the target file as a plybin)
-binaryToPly <plybin file> <target file> [-8|-9|-11] 			Loads the plybin file and saves the mesh to the target file as a ply)
-plyDirToBinary <ply directory> <target directory> <-8|-9|-11> [-r]	<Recursivly> converts all .ply in the ply directory to .plybin in the target directory)
-binaryDirToPly <plybin directory> <target directory> [-r]		<Recursivly> converts all .plybin the in plybin directory to .ply in the target directory)
+plyToBinary <ply file> <target file> [version] 				Loads the ply file and saves the mesh to the target file as a plybin)
+binaryToPly <plybin file> <target file> [version] 			Loads the plybin file and saves the mesh to the target file as a ply)
+plyDirToBinary <ply directory> <target directory> <version> [-r]	Converts all .ply in the ply directory to .plybin in the target directory)
+binaryDirToPly <plybin directory> <target directory> [-r]		Converts all .plybin the in plybin directory to .ply in the target directory)
 -h or --help 								Print this help message");
 					return;
 				}
@@ -47,23 +49,47 @@ binaryDirToPly <plybin directory> <target directory> [-r]		<Recursivly> converts
 						return;
 					}
 				} else if (args [0].Equals ("plyDirToBinary")) {
-					if (/*args.Length != 3 &*/ args.Length != 4)
+					if (args.Length != 4 && args.Length != 5)
 						Console.Out.WriteLine ("Wrong amount of arguments supplied");
 					else {
 						int plybinVersion = ParsePlybinVersion(args, 3);
 						if(plybinVersion<0)
 							return;
-						PlyDirToBinaryDir(args[1], args[2], true, plybinVersion);
+						bool recursive = false;
+						bool error = false;
+						if(args.Length==5) {
+							if(args[4].Equals("-r"))
+								recursive=true;
+							else {
+								Console.Out.WriteLine("Argument {0} not recogniced", args[4]);
+								error = true;
+							}
+						}
 
-						return;
+						if(!error) {
+							PlyDirToBinaryDir(args[1], args[2], recursive, plybinVersion);
+							return;
+						}
 					}
 				} else if (args [0].Equals ("binaryDirToPly")) {
-					if (args.Length != 3)
+					if (args.Length != 3 & args.Length!=4)
 						Console.Out.WriteLine ("Wrong amount of arguments supplied");
 					else {
-						BinaryDirToPlyDir(args[1], args[2], true);
+						bool recursive = false;
+						bool error = false;
+						if(args.Length==4) {
+							if(args[3].Equals("-r"))
+								recursive=true;
+							else {
+								Console.Out.WriteLine("Argument {0} not recogniced", args[3]);
+								error = true;
+							}
+						}
 
-						return;
+						if(!error) {
+							BinaryDirToPlyDir(args[1], args[2], recursive);
+							return;
+						}
 					}
 				}
 			} catch (Exception e) {
@@ -119,7 +145,7 @@ binaryDirToPly <plybin directory> <target directory> [-r]		<Recursivly> converts
 						int lastSlash = Math.Max(file.LastIndexOf('/'), file.LastIndexOf('\\'));
 						string name = file.Substring (lastSlash+1, file.Length-(lastSlash+1))+"bin"+plybinVersion; //To get the name with a .plybin extension from the full path.
 						Directory.CreateDirectory(outdir);
-						PlyToBinary (file, outdir+"/"+name, plybinVersion); //Could also deduct the version
+						PlyToBinary (file, outdir+"/"+name, 0); //Deducted from file name
 					}
 				}
 				return;
@@ -128,11 +154,11 @@ binaryDirToPly <plybin directory> <target directory> [-r]		<Recursivly> converts
 
 		static void BinaryToPly(string infile, string outfile, int plybinVersion)
 		{
+			Console.Out.WriteLine ("infile (plybin): {0}, outfile (ply): {1}", infile, outfile);
 			plybinVersion = UseOrDeductPlybinVersion(plybinVersion, infile);
 			if(plybinVersion<=0) {
 				return;
 			}
-			Console.Out.WriteLine ("plybin version: {2}, infile (plybin): {0}, outfile (ply): {1}", infile, outfile, plybinVersion);
 
 			using (var stream = new FileStream (infile, FileMode.Open)) {
 				var loader = new MeshLoader (stream, plybinVersion);
@@ -194,12 +220,12 @@ binaryDirToPly <plybin directory> <target directory> [-r]		<Recursivly> converts
 			int deductedVersion = DeductPlybinVersion(name);
 
 			if(plybinVersion==0) {
-				Console.Out.WriteLine("Deducting plybin version from filename");
 				plybinVersion = deductedVersion;
 				if(plybinVersion==0) {
 					Console.Out.WriteLine("Plybin version could not be deducted from filename '{0}'", name);
 					return -1;
 				}
+				Console.Out.WriteLine("Deducted plybin version {0}", plybinVersion);
 			}
 			else {
 				if(deductedVersion != 0 & deductedVersion != plybinVersion) {
@@ -209,7 +235,7 @@ binaryDirToPly <plybin directory> <target directory> [-r]		<Recursivly> converts
 					return -1;
 				}
 				else if(deductedVersion==plybinVersion)
-					Console.Out.WriteLine("filename matches wanted plybin version! ({0})", plybinVersion);
+					Console.Out.WriteLine("Filename matches wanted plybin version! ({0})", plybinVersion);
 			}
 			return plybinVersion;
 		}
